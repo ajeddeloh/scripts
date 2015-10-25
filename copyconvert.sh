@@ -1,26 +1,38 @@
 #!/bin/bash
 
-COMMANDS='/tmp/commands'
+mkdir -p "$2"
+pushd "$1" > /dev/null
 
-mkdir -p $2
-pushd "$1"
+function isFlac {
+    local TMP="$(mimedb -f $1 | grep -i flac)"
+    [[ -n "$TMP" ]]
+}
 
-find . -print0 | while IFS= read -r -d $'\0' line; do
+FF_COMMANDS=""
+LN_COMMANDS=""
+
+while IFS= read -r -d $'\0' line; do
     if [[ -d "$line" ]]; then
         mkdir -p "$2/$line"
     fi
     if [[ -f "$line" ]]; then
-        TYPE="$(mimedb -f $line | grep -i flac)"
-        if [[ -n "$TYPE" ]]; then
+        if isFlac "$line" ; then
             OUT=$2/$(echo $line | sed s/.flac/.ogg/I)
-            echo "ffmpeg -loglevel quiet -y -i \"$line\" -acodec libvorbis \"$OUT\"" >> $COMMANDS &
+            if [ ! -e "$OUT" ] ; then
+                FF_COMMANDS="$FF_COMMANDS ffmpeg -loglevel quiet -y -i \"$line\" -acodec libvorbis \"$OUT\"\n"
+            fi
         else
-            ln -s "$1/$line" "$2/$line"
+            OUT="$2/$line"
+            if [ ! -e "$OUT" ] ; then
+                LN_COMMANDS="$LN_COMMANDS ln -s \"$1/$line\" \"$2/$line\"\n"
+            fi
         fi
     fi
-done
+done < <(find . -print0)
 
-PARALLEL=-j9 parallel --bar -a $COMMANDS
+echo "Starting up, found $(echo -e $FF_COMMANDS | wc -l) flac files"
+echo "Found $(echo -e $LN_COMMANDS | wc -l) files to link"
+COMMANDS="$FF_COMMANDS $LN_COMMANDS"
+echo -e $COMMANDS | parallel --bar 
 
-rm $COMMANDS
-popd 
+popd > /dev/null
