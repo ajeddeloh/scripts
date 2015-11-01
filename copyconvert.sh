@@ -24,7 +24,7 @@ while IFS= read -r -d $'\0' line; do
         else
             OUT="$2/$line"
             if [ ! -e "$OUT" ] ; then
-                LN_COMMANDS="$LN_COMMANDS ln -s \"$1/$line\" \"$2/$line\"\n"
+                LN_COMMANDS="$LN_COMMANDS ln -s \"$1/$line\" \"$OUT"\n"
             fi
         fi
     fi
