@@ -33,7 +33,7 @@ handle_file() {
         ext='m4a'
     fi
 
-    local dst="$(muprint -s 'A%ua' -s 't%uf' -r _ "$dest_root/%uA/%ub/%t.%e$EXT" "$file")"
+    local dst="$(muprint -s 'A%ua' -s 't%uf' -r _ "$dest_root/%uA/%ub/%ut.%ue$EXT" "$file")"
     #debug echo
     #echo "$dst"
     mkdir -p "$(dirname "$dst")"
