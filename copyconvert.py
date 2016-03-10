@@ -27,10 +27,14 @@ def process_file(fname):
     relpath = os.path.relpath(fname, SRC)
     if fname.lower().endswith(".flac"):
         new_fname = os.path.join(DST, os.path.splitext(relpath)[0] + ".ogg")
+        if os.path.exists(new_fname):
+            return
         make_dirs_for_file(new_fname)
         subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "quiet", "-n", "-i", fname, "-acodec", "libvorbis", new_fname])
     else:
         new_fname = os.path.join(DST, relpath)
+        if os.path.exists(new_fname):
+            return
         make_dirs_for_file(new_fname)
         os.symlink(fname, new_fname)
 
