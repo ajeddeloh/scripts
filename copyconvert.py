@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import os
 import sys
 import subprocess
@@ -9,7 +9,6 @@ if len(sys.argv) != 3:
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
-MUPRINT = "/home/andrew/bin/muprint"
 
 def get_all_files(src):
     for root, dirs, files in os.walk(SRC):
@@ -27,19 +26,14 @@ def process_file(fname):
     relpath = os.path.relpath(fname, SRC)
     if fname.lower().endswith(".flac"):
         new_fname = os.path.join(DST, os.path.splitext(relpath)[0] + ".ogg")
-        if os.path.exists(new_fname):
-            return
         make_dirs_for_file(new_fname)
-        subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "quiet", "-n", "-i", fname, "-acodec", "libvorbis", new_fname])
+        subprocess.call(["ffmpeg", "-hide_banner", "-loglevel", "quiet", "-y", "-i", fname, "-map", "0:a:0", "-acodec", "libopus", "-b:a", "96000", new_fname], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
     else:
         new_fname = os.path.join(DST, relpath)
         if os.path.exists(new_fname):
             return
         make_dirs_for_file(new_fname)
         os.symlink(fname, new_fname)
-
-#for fname in get_all_files(SRC):
-#    process_file(fname)
 
 def main():
     with ProcessPoolExecutor() as executor:
